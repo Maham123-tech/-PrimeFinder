@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
 #include <math.h>
-#include <omp.h>  // OpenMP for parallel execution
 
 int is_prime(int num) {
     if (num < 2) return 0;
@@ -13,12 +13,13 @@ int is_prime(int num) {
 
 void find_primes(int start, int end) {
     int count = 0;
+
     double start_time = omp_get_wtime();  // Start timer
 
-    #pragma omp parallel for schedule(dynamic) reduction(+:count)
+    #pragma omp parallel for schedule(static) reduction(+:count)
     for (int i = start; i <= end; i++) {
         if (is_prime(i)) {
-            #pragma omp critical
+            #pragma omp critical  // Prevent race conditions in printing
             printf("%d ", i);
             count++;
         }
@@ -32,8 +33,12 @@ void find_primes(int start, int end) {
 
 int main() {
     int start, end;
+
     printf("Enter the range (start end): ");
     scanf("%d %d", &start, &end);
+
+    printf("Finding primes using OpenMP (Static Scheduling)...\n");
     find_primes(start, end);
+
     return 0;
 }
